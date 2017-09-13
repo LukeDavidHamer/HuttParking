@@ -1,14 +1,19 @@
 package dbAccess;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-
-public class DBConnection {
+public class DBConnection{
 	private Connection myConn;
-
+	TimeRemaining time;
+	
 	public DBConnection() throws Exception {
 
 		String dbUrl = "jdbc:mysql://localhost:3306/user_login";
@@ -19,6 +24,7 @@ public class DBConnection {
 		myConn = DriverManager.getConnection(dbUrl, user, password);
 		System.out.println("initialising database. . .");
 		Statement myStmt = myConn.createStatement();
+		time = new TimeRemaining();
 	}
 
 	public boolean searchUser (String plate, String password) throws SQLException {
@@ -83,13 +89,10 @@ public class DBConnection {
 
 			if(myRS.next()) {
 				String endTime = myRS.getString(0);
-				Calendar endCal = Calendar.getInstance();
-				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-				endCal.setTime(sdf.parse(endTime));
-				int hour = endCal.get(Calendar.HOUR);
-				int minute = endCal.get(Calendar.MINUTE);
+				int totalMin = time.calcDiff(endTime);
+				String result = time.timeDiff(totalMin);
+				return result;
 			}
-			return null;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally {
@@ -97,4 +100,30 @@ public class DBConnection {
 		}		
 		return null;
 	}
+	
+	/*public boolean addTime(String parkNum, String min) {
+		PreparedStatement myStmt = null;
+		ResultSet myRS = null;
+		String start;
+		String end;
+
+		try {
+			myStmt = myConn.prepareStatement("SELECT * FROM account WHERE liscensePlate =? and password =?");
+			myStmt.setString(1, start);
+			myStmt.setString(2, end);
+			myRS = myStmt.executeQuery();
+
+			if(myRS.next()) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			myConn.close();
+		}
+		return false;
+	}*/
 }
